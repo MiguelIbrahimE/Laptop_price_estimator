@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import Autosuggest from 'react-autosuggest';
+import { cpus } from './cpuList';
+import { gpus } from './gpuList'; // Ensure this import is correct
 
 const MainPage: React.FC = () => {
   const [cpu, setCpu] = useState('');
@@ -7,6 +10,8 @@ const MainPage: React.FC = () => {
   const [ssd, setSsd] = useState('');
   const [make, setMake] = useState('');
   const [price, setPrice] = useState<number | null>(null);
+  const [cpuSuggestions, setCpuSuggestions] = useState<string[]>([]);
+  const [gpuSuggestions, setGpuSuggestions] = useState<string[]>([]);
 
   const handleGeneratePrice = async () => {
     try {
@@ -24,6 +29,68 @@ const MainPage: React.FC = () => {
     }
   };
 
+  const onCpuSuggestionsFetchRequested = ({ value }: { value: string }) => {
+    setCpuSuggestions(getCpuSuggestions(value));
+  };
+
+  const onCpuSuggestionsClearRequested = () => {
+    setCpuSuggestions([]);
+  };
+
+  const getCpuSuggestions = (value: string): string[] => {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+
+    return inputLength === 0 ? [] : cpus.filter(cpu =>
+      cpu.toLowerCase().slice(0, inputLength) === inputValue
+    );
+  };
+
+  const onGpuSuggestionsFetchRequested = ({ value }: { value: string }) => {
+    setGpuSuggestions(getGpuSuggestions(value));
+  };
+
+  const onGpuSuggestionsClearRequested = () => {
+    setGpuSuggestions([]);
+  };
+
+  const getGpuSuggestions = (value: string): string[] => {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+
+    return inputLength === 0 ? [] : gpus.filter(gpu =>
+      gpu.toLowerCase().slice(0, inputLength) === inputValue
+    );
+  };
+
+  const getSuggestionValue = (suggestion: string) => suggestion;
+
+  const renderSuggestion = (suggestion: string) => (
+    <div>
+      {suggestion}
+    </div>
+  );
+
+  const onCpuChange = (event: React.ChangeEvent<HTMLInputElement>, { newValue }: { newValue: string }) => {
+    setCpu(newValue);
+  };
+
+  const onGpuChange = (event: React.ChangeEvent<HTMLInputElement>, { newValue }: { newValue: string }) => {
+    setGpu(newValue);
+  };
+
+  const cpuInputProps = {
+    placeholder: 'Type a CPU model',
+    value: cpu,
+    onChange: onCpuChange
+  };
+
+  const gpuInputProps = {
+    placeholder: 'Type a GPU model',
+    value: gpu,
+    onChange: onGpuChange
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Welcome to Laptop Price Estimator</h1>
@@ -31,11 +98,25 @@ const MainPage: React.FC = () => {
       <form onSubmit={(e) => { e.preventDefault(); handleGeneratePrice(); }}>
         <div>
           <label>CPU: </label>
-          <input type="text" value={cpu} onChange={(e) => setCpu(e.target.value)} required />
+          <Autosuggest 
+            suggestions={cpuSuggestions}
+            onSuggestionsFetchRequested={onCpuSuggestionsFetchRequested}
+            onSuggestionsClearRequested={onCpuSuggestionsClearRequested}
+            getSuggestionValue={getSuggestionValue}
+            renderSuggestion={renderSuggestion}
+            inputProps={cpuInputProps}
+          />
         </div>
         <div>
           <label>GPU: </label>
-          <input type="text" value={gpu} onChange={(e) => setGpu(e.target.value)} required />
+          <Autosuggest 
+            suggestions={gpuSuggestions}
+            onSuggestionsFetchRequested={onGpuSuggestionsFetchRequested}
+            onSuggestionsClearRequested={onGpuSuggestionsClearRequested}
+            getSuggestionValue={getSuggestionValue}
+            renderSuggestion={renderSuggestion}
+            inputProps={gpuInputProps}
+          />
         </div>
         <div>
           <label>RAM: </label>
