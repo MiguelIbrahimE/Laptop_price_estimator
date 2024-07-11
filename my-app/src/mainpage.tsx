@@ -8,10 +8,20 @@ const MainPage: React.FC = () => {
   const [make, setMake] = useState('');
   const [price, setPrice] = useState<number | null>(null);
 
-  const handleGeneratePrice = () => {
-    // Here, you would typically call an API to get the price. For this example, we'll just generate a random price.
-    const generatedPrice = Math.floor(Math.random() * 2000) + 500; // Random price between 500 and 2500
-    setPrice(generatedPrice);
+  const handleGeneratePrice = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/generate-price', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cpu, gpu, ram, ssd, make })
+      });
+      const data = await response.json();
+      setPrice(data.price);
+    } catch (error) {
+      console.error('Error generating price:', error);
+    }
   };
 
   return (
